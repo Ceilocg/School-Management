@@ -132,21 +132,21 @@ const UserManagement: React.FC = () => {
         <div className="p-4 border rounded shadow bg-white flex items-center">
           <FaUserShield className="text-4xl text-blue-500 mr-4" />
           <div>
-            <h3 className="font-bold text-lg">Admins</h3>
+            <h3 className="font-bold text-lg">Admin(s)</h3>
             <p className="text-gray-600">{userCounts.Admin}</p>
           </div>
         </div>
         <div className="p-4 border rounded shadow bg-white flex items-center">
           <FaUserGraduate className="text-4xl text-green-500 mr-4" />
           <div>
-            <h3 className="font-bold text-lg">Teacher</h3>
+            <h3 className="font-bold text-lg">Teacher(s)</h3>
             <p className="text-gray-600">{userCounts.Teacher}</p>
           </div>
         </div>
         <div className="p-4 border rounded shadow bg-white flex items-center">
           <FaUserTie className="text-4xl text-yellow-500 mr-4" />
           <div>
-            <h3 className="font-bold text-lg">Faculty</h3>
+            <h3 className="font-bold text-lg">Faculty(ies)</h3>
             <p className="text-gray-600">{userCounts.Faculty}</p>
           </div>
         </div>
