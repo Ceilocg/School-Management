@@ -1,4 +1,3 @@
-// AddUserPage.tsx
 import React, { useState } from 'react';
 import { db, auth, storage } from '../firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore'; // Use setDoc to create user document
@@ -14,7 +13,6 @@ const AddUserPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Admin'); // Default role set to Admin
   const [image, setImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState('');
 
   // Handle image upload
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,8 +55,7 @@ const AddUserPage: React.FC = () => {
       setPassword('');
       setRole('Admin'); // Reset role to default
       setImage(null);
-      setImageUrl('');
-      
+
       // Navigate back to user management page
       navigate('/user-management'); // Adjust this path as necessary
     } catch (error) {

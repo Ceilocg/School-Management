@@ -20,7 +20,6 @@ interface User {
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // Editing state
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -58,7 +57,6 @@ const UserManagement: React.FC = () => {
     if (userDocSnap.exists()) {
       const userData = userDocSnap.data();
       setCurrentUserRole(userData.role);
-      setCurrentUserId(userId);
     }
   };
 
@@ -70,7 +68,6 @@ const UserManagement: React.FC = () => {
         fetchUserRole(user.uid);
       } else {
         setCurrentUserRole(null);
-        setCurrentUserId(null);
       }
     });
   }, []);
