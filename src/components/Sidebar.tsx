@@ -19,16 +19,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     return (
         <aside className={`bg-gray-800 text-white h-screen shadow-lg transition-all duration-300 fixed top-0 left-0 z-50 ${isCollapsed ? 'w-16' : 'w-64'}`}>
             <div className="p-4 border-b border-gray-700 flex flex-col items-center">
-                <img
-                    src="src/assets/School.png" // Adjust the path to your image
-                    alt="School Logo"
-                    className={`transition-all duration-300 ${isCollapsed ? 'h-10 w-10' : 'h-20 w-auto'}`}
-                    style={{
-                        objectFit: 'contain',
-                    }}
+                <a href="https://ibb.co/qBFMV75" target="_blank" rel="noopener noreferrer">
+                <img src="https://i.ibb.co/qBFMV75/school-logo.png" // Replace with your actual image URL
+                alt="School Logo"
+                className={`transition-all duration-300 ${isCollapsed ? 'h-10 w-10' : 'h-20 w-auto'}`}
+                style={{
+                    objectFit: 'contain',
+                }}
                 />
+                </a>
                 {!isCollapsed && <h2 className="text-xl font-bold mt-2 text-center">Admin Dashboard</h2>}
-            </div>
+                </div>
 
             <nav className="mt-6">
                 <ul className="space-y-4">

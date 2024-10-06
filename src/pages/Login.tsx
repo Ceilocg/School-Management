@@ -108,11 +108,14 @@ export default function LoginPage() {
           About Us
         </button>
 
-        <img
-          src="src/assets/School.png"
-          alt="Valentina B. Boncan National High School Logo"
-          className="w-70 h-55"
+        <a href="https://ibb.co/qBFMV75" target="_blank" rel="noopener noreferrer">
+        <img src="https://i.ibb.co/qBFMV75/school-logo.png" // Replace with the correct image URL
+        alt="Valentina B. Boncan National High School Logo"
+        className="w-70 h-55"
         />
+        </a>
+
+
 
         <div className="text-center">
           <div className="flex justify-center space-x-4 mb-2">
