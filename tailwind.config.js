@@ -6,7 +6,14 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // Extend the theme here if needed (e.g., custom colors for dark/light modes)
+      colors: {
+        pink: {
+          100: '#ffccd5', // Light pink
+          300: '#ff99a8', // Medium pink
+          500: '#ff667f', // Darker pink
+          700: '#ff3361', // Dark pink
+        },
+      },
     },
   },
   darkMode: 'class', // Enable class-based dark mode

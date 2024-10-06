@@ -84,7 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <button onClick={onToggleSidebar} className="text-white focus:outline-none">
                 <FaBars className="text-2xl" />
             </button>
-            <h1 className="text-xl font-bold md:text-2xl">Admin Dashboard</h1>
+            <h1 className="text-xl font-bold md:text-2xl">Valentina B. Boncan National High School</h1>
 
             <div className="relative flex items-center space-x-4">
                 {/* Notification Bell */}
