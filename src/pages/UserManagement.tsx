@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
-import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore'; // Removed deleteDoc
+import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { storage } from '../firebaseConfig';
@@ -8,7 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FaUserShield, FaUserGraduate, FaUserTie } from 'react-icons/fa';
 
 interface User {
-  id: string;
+  id: string; 
   fullname: string;
   username: string;
   email: string;
@@ -20,6 +20,7 @@ interface User {
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(''); // State for search query
 
   // Editing state
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -123,10 +124,17 @@ const UserManagement: React.FC = () => {
     setImageFile(null);
   };
 
+  // Filtered users based on search query
+  const filteredUsers = users.filter(user => 
+    user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold">User Management</h2>
-
+  
       {/* Responsive Dashboard */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
         <div className="p-4 border rounded shadow bg-white flex items-center">
@@ -151,16 +159,26 @@ const UserManagement: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Add User Button for Admin */}
-      {currentUserRole === 'Admin' ? (
-        <Link to="/add-user" className="mt-4 inline-block bg-green-500 text-white p-2 rounded">
-          Add User
-        </Link>
-      ) : (
-        <p className="mt-4 text-red-600">You do not have permission to add users.</p>
-      )}
-
+  
+      {/* Flex container for Add User button and Search Bar */}
+      <div className="flex justify-between items-center mt-4">
+        {currentUserRole === 'Admin' ? (
+          <Link to="/add-user" className="bg-green-500 text-white p-2 rounded">
+            Add User
+          </Link>
+        ) : (
+          <p className="text-red-600">You do not have permission to add users.</p>
+        )}
+  
+        <input
+          type="text"
+          placeholder="Search by name, username, or email"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="p-2 border border-gray-300 rounded w-1/3 ml-4"
+        />
+      </div>
+  
       {/* Users Table */}
       <table className="min-w-full border border-gray-300 mt-4">
         <thead>
@@ -175,7 +193,7 @@ const UserManagement: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map(user => (
+          {filteredUsers.map(user => (
             <tr key={user.id}>
               <td className="border border-gray-300 p-2">{user.fullname}</td>
               <td className="border border-gray-300 p-2">{user.username}</td>
@@ -198,7 +216,7 @@ const UserManagement: React.FC = () => {
           ))}
         </tbody>
       </table>
-
+  
       {/* Edit User Form */}
       {editingUser && (
         <form onSubmit={handleSaveEdit} className="mt-4 p-4 border border-gray-300">
@@ -273,6 +291,7 @@ const UserManagement: React.FC = () => {
       )}
     </div>
   );
+  
 };
 
 export default UserManagement;

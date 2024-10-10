@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebaseConfig'; // Ensure you have your Firebase config here
 import Sidebar from './components/Sidebar';
@@ -13,6 +13,11 @@ import DataManagement from './pages/DataManagement';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import RequestForm from './pages/RequestForm'; // Import the new RequestForm page
+import Grades from './pages/DataManagementComponents/Grades'; // Ensure you import Grades component
+import Enrollees from './pages/DataManagementComponents/Enrollees'; // Ensure you import Enrollees component
+import Dropouts from './pages/DataManagementComponents/Dropouts'; // Ensure you import Dropouts component
+import Transferee from './pages/DataManagementComponents/Transferee'; // Ensure you import Transferee component
+
 import { AuthProvider } from './context/AuthContext';
 
 const App: React.FC = () => {
@@ -58,7 +63,7 @@ const App: React.FC = () => {
 
     return (
         <AuthProvider>
-            <Router>
+            <BrowserRouter>
                 <div className="flex flex-col min-h-screen">
                     <div className="flex flex-1">
                         {isAuthenticated ? (
@@ -70,10 +75,14 @@ const App: React.FC = () => {
                                         <Routes>
                                             <Route path="/" element={<Home />} />
                                             <Route path="/user-management" element={<UserManagement />} />
-                                            <Route path="/add-user" element={<AddUserPage />} /> {/* Add route for AddUserPage */}
+                                            <Route path="/add-user" element={<AddUserPage />} />
                                             <Route path="/form-templates" element={<FormTemplates />} />
                                             <Route path="/data-management" element={<DataManagement />} />
-                                            <Route path="/request-form" element={<RequestForm />} /> {/* Add route for RequestForm */}
+                                            <Route path="/grades" element={<Grades />} /> {/* Add route for Grades */}
+                                            <Route path="/enrollees" element={<Enrollees />} /> {/* Add route for Enrollees */}
+                                            <Route path="/dropouts" element={<Dropouts />} /> {/* Add route for Dropouts */}
+                                            <Route path="/transferee" element={<Transferee />} /> {/* Add route for Transferee */}
+                                            <Route path="/request-form" element={<RequestForm />} />
                                             <Route path="*" element={<Navigate to="/" />} /> {/* Redirect authenticated users to Home */}
                                         </Routes>
                                     </div>
@@ -92,7 +101,7 @@ const App: React.FC = () => {
                         )}
                     </div>
                 </div>
-            </Router>
+            </BrowserRouter>
         </AuthProvider>
     );
 };
