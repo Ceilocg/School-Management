@@ -3,6 +3,8 @@ import { FaBars, FaUserCircle, FaBell } from 'react-icons/fa';
 import { auth, db } from '../firebaseConfig'; // Import your Firebase config
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
+import { Link } from 'react-router-dom'; // For navigation to Notifications page
+import Snackbar from '@mui/material/Snackbar'; // Snackbar for notifications
 
 interface NavbarProps {
     onToggleSidebar: () => void;
@@ -13,6 +15,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [userData, setUserData] = useState<{ username: string; imageUrl: string } | null>(null);
     const [notifications, setNotifications] = useState<{ id: string; message: string; status: string }[]>([]);
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // Snackbar state
+    const [snackbarMessage, setSnackbarMessage] = useState(''); // Snackbar message
 
     useEffect(() => {
         // Fetch user data
@@ -34,19 +38,19 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             }
         };
 
-        // Fetch notifications (requests stored in 'requests' collection)
+        // Fetch notifications (requests stored in 'form_requests' collection)
         const fetchNotifications = async () => {
             const user = auth.currentUser;
             if (user) {
                 const requestQuery = query(
-                    collection(db, 'requests'),
+                    collection(db, 'form_requests'),
                     where('status', '==', 'pending') // Get only pending requests
                 );
 
                 onSnapshot(requestQuery, (querySnapshot) => {
                     const requestsData = querySnapshot.docs.map((doc) => ({
                         id: doc.id,
-                        message: `Request from ${doc.data().userName}`,
+                        message: `Request from ${doc.data().firstName} ${doc.data().lastName} for ${doc.data().depedForm}`,
                         status: doc.data().status,
                     }));
                     setNotifications(requestsData);
@@ -68,14 +72,20 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
     const handleRequestAction = async (id: string, action: 'accept' | 'decline') => {
         try {
-            const requestDocRef = doc(db, 'requests', id);
+            const requestDocRef = doc(db, 'form_requests', id);
             if (action === 'accept') {
                 await updateDoc(requestDocRef, { status: 'accepted' });
+                setSnackbarMessage('Request accepted');
             } else if (action === 'decline') {
-                await deleteDoc(requestDocRef); // You can delete the request if declined
+                await deleteDoc(requestDocRef);
+                setSnackbarMessage('Request declined');
             }
+            setSnackbarOpen(true);
+            setNotifications(notifications.filter((notification) => notification.id !== id));
         } catch (error) {
             console.error('Error updating request: ', error);
+            setSnackbarMessage('Error processing request');
+            setSnackbarOpen(true);
         }
     };
 
@@ -134,6 +144,11 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                                     ))
                                 )}
                             </ul>
+                            <div className="p-2 text-center">
+                                <Link to="/notifications" className="text-blue-500 text-sm underline">
+                                    View All Requests
+                                </Link>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -171,6 +186,14 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                     )}
                 </div>
             </div>
+
+            {/* Snackbar for Action Feedback */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                message={snackbarMessage}
+            />
         </header>
     );
 };

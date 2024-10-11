@@ -13,6 +13,7 @@ import DataManagement from './pages/DataManagement';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import RequestForm from './pages/RequestForm'; // Import the new RequestForm page
+import Notifications from './pages/Notifications'; // Import Notifications page
 import Grades from './pages/DataManagementComponents/Grades'; // Ensure you import Grades component
 import Enrollees from './pages/DataManagementComponents/Enrollees'; // Ensure you import Enrollees component
 import Dropouts from './pages/DataManagementComponents/Dropouts'; // Ensure you import Dropouts component
@@ -83,6 +84,7 @@ const App: React.FC = () => {
                                             <Route path="/dropouts" element={<Dropouts />} /> {/* Add route for Dropouts */}
                                             <Route path="/transferee" element={<Transferee />} /> {/* Add route for Transferee */}
                                             <Route path="/request-form" element={<RequestForm />} />
+                                            <Route path="/notifications" element={<Notifications />} /> {/* Add Notifications route */}
                                             <Route path="*" element={<Navigate to="/" />} /> {/* Redirect authenticated users to Home */}
                                         </Routes>
                                     </div>
