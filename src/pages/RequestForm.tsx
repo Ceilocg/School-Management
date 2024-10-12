@@ -15,8 +15,8 @@ const RequestForm: React.FC = () => {
     const [depedForm, setDepedForm] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [lrn, setLrn] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
+    const [lrn, setLrn] = useState(''); // LRN as number
+    const [contactNumber, setContactNumber] = useState(''); // Contact number as number
     const [email, setEmail] = useState('');
     const [strand, setStrand] = useState('');
     const [yearGraduated, setYearGraduated] = useState('');
@@ -24,8 +24,8 @@ const RequestForm: React.FC = () => {
     const [track, setTrack] = useState('');
     const [tvlSubOption, setTvlSubOption] = useState(''); // Add state for TVL sub-options
     const [showTVLSubOptions, setShowTVLSubOptions] = useState(false); // Control TVL options visibility
-    const [error, setError] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [error, setError] = useState(''); // Error state for validation messages
+    const [openSnackbar, setOpenSnackbar] = useState(false); // Control snackbar visibility
     const [greeting, setGreeting] = useState(''); // State for greeting message
     const navigate = useNavigate();
     const formRef = useRef<HTMLDivElement>(null);
@@ -50,25 +50,63 @@ const RequestForm: React.FC = () => {
     };
 
     const validateForm = () => {
-        // Validate LRN (12 digits) only if it's filled
-        if (lrn && !/^\d{12}$/.test(lrn)) {
+        // Validate if all required fields are filled
+        if (!depedForm) {
+            setError('Please select a request certificate.');
+            setOpenSnackbar(true);
+            return false;
+        }
+
+        if (!firstName || !lastName) {
+            setError('First Name and Last Name are required.');
+            setOpenSnackbar(true);
+            return false;
+        }
+
+        if (!lrn || !/^\d{12}$/.test(lrn)) {
             setError('LRN must consist of 12 digits.');
             setOpenSnackbar(true);
             return false;
         }
 
-        // Validate Contact Number (Philippines format) only if it's filled
-        if (contactNumber && !/^(09|\+639)\d{9}$/.test(contactNumber)) {
+        if (!contactNumber || !/^(09|\+639)\d{9}$/.test(contactNumber)) {
             setError('Contact number must be a valid Philippine number (09XXXXXXXXX or +639XXXXXXXXX).');
             setOpenSnackbar(true);
             return false;
         }
 
-        // Validate Email only if it's filled
-        if (email && !/\S+@\S+\.\S+/.test(email)) {
+        if (!email || !/\S+@\S+\.\S+/.test(email)) {
             setError('Please enter a valid email address.');
             setOpenSnackbar(true);
             return false;
+        }
+
+        // Validate Strand and Sub-options (if necessary)
+        if (!strand) {
+            setError('Please select a strand.');
+            setOpenSnackbar(true);
+            return false;
+        }
+
+        if (strand === 'TVL' && !tvlSubOption) {
+            setError('Please select a TVL sub-option.');
+            setOpenSnackbar(true);
+            return false;
+        }
+
+        // Validate Year Graduated or Grade Level based on depedForm selection
+        if (depedForm !== 'Form 138' && depedForm !== 'Certificate of Enrollment') {
+            if (!yearGraduated) {
+                setError('Please select the school year you graduated.');
+                setOpenSnackbar(true);
+                return false;
+            }
+        } else {
+            if (!gradeLevel) {
+                setError('Please select a grade level.');
+                setOpenSnackbar(true);
+                return false;
+            }
         }
 
         return true;
@@ -76,11 +114,11 @@ const RequestForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-    
+
         // Validate form before proceeding
         const isValid = validateForm();
         if (!isValid) return; // Stop if validation fails
-    
+
         // Create formData object conditionally based on visible fields
         const formData: any = {
             depedForm,
@@ -92,7 +130,7 @@ const RequestForm: React.FC = () => {
             strand,
             timestamp: Timestamp.now(), // Use Firestore Timestamp for consistency
         };
-    
+
         // Conditionally add yearGraduated or gradeLevel based on depedForm
         if (depedForm !== 'Form 138' && depedForm !== 'Certificate of Enrollment') {
             if (yearGraduated) {
@@ -103,7 +141,7 @@ const RequestForm: React.FC = () => {
                 formData.gradeLevel = gradeLevel; // Include gradeLevel if applicable
             }
         }
-    
+
         // Add track and tvlSubOption if they are selected
         if (track) {
             formData.track = track;
@@ -111,14 +149,17 @@ const RequestForm: React.FC = () => {
         if (tvlSubOption) {
             formData.tvlSubOption = tvlSubOption;
         }
-    
+
         // Submit the form data
         await submitFormRequest(formData, resetForm, setError, setOpenSnackbar);
-    
+
+        // Clear the error and close the Snackbar after successful submission
+        setError('');
+        setOpenSnackbar(false);
+
         // Set the greeting message upon successful submission
         setGreeting(`Thank you, ${firstName} ${lastName}! Your request for ${depedForm} has been submitted successfully.`);
     };
-    
 
     const handleCloseSnackbar = () => {
         setOpenSnackbar(false);
@@ -156,6 +197,14 @@ const RequestForm: React.FC = () => {
                 <IconButton onClick={handleBack} style={{ color: 'white' }}>
                     <ArrowBackIcon />
                 </IconButton>
+                
+                {/* Display the greeting message at the top */}
+                {greeting && (
+                    <div className="mb-4 text-white text-center">
+                        {greeting}
+                    </div>
+                )}
+                
                 <h2 className="text-2xl mb-4 text-white text-center">Request a Form</h2>
                 <form onSubmit={handleSubmit} className="mt-4">
                     <div className="mb-4">
@@ -204,22 +253,26 @@ const RequestForm: React.FC = () => {
                                 <label htmlFor="lrn" className="text-white">LRN</label>
                                 <input
                                     id="lrn"
-                                    type="text"
+                                    type="number" // Set input type to number
                                     value={lrn}
                                     onChange={(e) => setLrn(e.target.value)}
                                     className="w-full p-2 mt-2 border rounded bg-gray-700 text-white"
                                     required
+                                    min="100000000000" // Set minimum value for LRN (12 digits)
+                                    max="999999999999" // Set maximum value for LRN (12 digits)
                                 />
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="contactNumber" className="text-white">Contact Number</label>
                                 <input
                                     id="contactNumber"
-                                    type="text"
+                                    type="number" // Set input type to number
                                     value={contactNumber}
                                     onChange={(e) => setContactNumber(e.target.value)}
                                     className="w-full p-2 mt-2 border rounded bg-gray-700 text-white"
                                     required
+                                    min="9000000000" // Set minimum value for contact number
+                                    max="99999999999" // Set maximum value for contact number (11 digits)
                                 />
                             </div>
                             <div className="mb-4">
@@ -308,18 +361,18 @@ const RequestForm: React.FC = () => {
                             <button type="submit" className="w-full bg-blue-500 p-2 text-white rounded hover:bg-blue-600 transition">
                                 Submit Request
                             </button>
-
-                            {/* Display the greeting message after successful submission */}
-                            {greeting && (
-                                <div className="mt-4 text-white text-center">
-                                    {greeting}
-                                </div>
-                            )}
                         </>
                     )}
                 </form>
-                <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                    <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+
+                {/* Snackbar for error handling */}
+                <Snackbar
+                    open={openSnackbar}
+                    autoHideDuration={6000} // Snackbar will automatically hide after 6 seconds
+                    onClose={handleCloseSnackbar}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert onClose={handleCloseSnackbar} severity="error">
                         {error}
                     </Alert>
                 </Snackbar>
