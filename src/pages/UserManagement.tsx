@@ -175,7 +175,7 @@ const UserManagement: React.FC = () => {
           placeholder="Search by name, username, or email"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="p-2 border border-gray-300 rounded w-1/3 ml-4"
+          className="p-2 border border-gray-300 rounded w-3/4 ml-4"
         />
       </div>
   

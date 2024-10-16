@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { collection, onSnapshot, query, doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; // Import Firebase config
+import { db } from '../firebaseConfig'; 
 
 interface Request {
   id: string;
   firstName: string;
+  middleInitial?: string; 
   lastName: string;
+  suffix?: string; 
   depedForm: string;
-  lrn: number;
-  contactNumber: number;
+  lrn: string;
+  contactNumber: string;
   email: string;
   strand: string;
-  tvlSubOption?: string; // Add optional field for TVL sub-option
-  yearGraduated: string;
-  gradeLevel: string;
+  tvlSubOption?: string;
+  yearGraduated?: string;
+  gradeLevel?: string;
   status: string;
   timestamp: any;
 }
 
-// Function to format the Firestore timestamp
+// Format the timestamp
 const formatTimestamp = (timestamp: any) => {
-  if (!timestamp) {
-    return 'No timestamp available';
-  }
-
+  if (!timestamp) return 'No timestamp available';
+  
   try {
-    const date = timestamp.toDate(); // Convert Firestore timestamp to JS Date
+    const date = timestamp.toDate(); 
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'long',
@@ -41,9 +41,32 @@ const formatTimestamp = (timestamp: any) => {
   }
 };
 
+// Get the current school year
+const getCurrentSchoolYear = () => {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are zero-indexed
+  if (currentMonth >= 6) {
+    return `${currentYear}-${currentYear + 1}`;
+  } else {
+    return `${currentYear - 1}-${currentYear}`;
+  }
+};
+
+// Get today's date in a readable format
+const getFormattedDate = () => {
+  const today = new Date();
+  return today.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
 const Notifications: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
 
+  // Fetch the requests from Firestore when the component is mounted
   useEffect(() => {
     const fetchRequests = async () => {
       const requestQuery = query(collection(db, 'form_requests'));
@@ -52,15 +75,17 @@ const Notifications: React.FC = () => {
         const requestsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           firstName: doc.data().firstName,
+          middleInitial: doc.data().middleInitial || '', 
           lastName: doc.data().lastName,
+          suffix: doc.data().suffix || '', 
           depedForm: doc.data().depedForm,
-          lrn: doc.data().lrn || 'N/A',
-          contactNumber: doc.data().contactNumber || 'N/A',
-          email: doc.data().email || 'N/A',
-          strand: doc.data().strand || 'N/A',
-          tvlSubOption: doc.data().tvlSubOption || null, // Fetch tvlSubOption if exists
-          yearGraduated: doc.data().yearGraduated || 'N/A',
-          gradeLevel: doc.data().gradeLevel || 'N/A',
+          lrn: doc.data().lrn !== 'N/A' ? doc.data().lrn : '',
+          contactNumber: doc.data().contactNumber !== 'N/A' ? doc.data().contactNumber : '',
+          email: doc.data().email !== 'N/A' ? doc.data().email : '',
+          strand: doc.data().strand !== 'N/A' ? doc.data().strand : '',
+          tvlSubOption: doc.data().tvlSubOption || null, 
+          yearGraduated: doc.data().yearGraduated !== 'N/A' ? doc.data().yearGraduated : '',
+          gradeLevel: doc.data().gradeLevel !== 'N/A' ? doc.data().gradeLevel : '',
           status: doc.data().status || 'pending',
           timestamp: doc.data().timestamp ? formatTimestamp(doc.data().timestamp) : 'N/A',
         }));
@@ -71,7 +96,6 @@ const Notifications: React.FC = () => {
     fetchRequests();
   }, []);
 
-  // Handle marking a request as done
   const markAsDone = async (id: string) => {
     try {
       const requestDoc = doc(db, 'form_requests', id);
@@ -105,12 +129,13 @@ const Notifications: React.FC = () => {
                 <th className="text-left px-6 py-3 text-gray-700 font-bold">Status</th>
                 <th className="text-left px-6 py-3 text-gray-700 font-bold">Timestamp</th>
                 <th className="text-left px-6 py-3 text-gray-700 font-bold">Action</th>
+                <th className="text-left px-6 py-3 text-gray-700 font-bold">Generate Data</th>
               </tr>
             </thead>
             <tbody>
               {requests.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="text-center px-6 py-4 text-gray-500">
+                  <td colSpan={12} className="text-center px-6 py-4 text-gray-500">
                     No requests found.
                   </td>
                 </tr>
@@ -120,8 +145,16 @@ const Notifications: React.FC = () => {
                     key={index}
                     className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4">{`${request.firstName} ${request.lastName}`}</td>
-                    <td className="px-6 py-4">{request.depedForm}</td>
+                    <td className="px-6 py-4">
+                      {request.firstName !== 'N/A' && request.firstName}{' '}
+                      {request.middleInitial !== 'N/A' && request.middleInitial}{' '}
+                      {request.lastName !== 'N/A' && request.lastName}{' '}
+                      {request.suffix && request.suffix !== 'N/A' && `${request.suffix}`}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {request.depedForm}
+                    </td>
                     <td className="px-6 py-4">{request.lrn}</td>
                     <td className="px-6 py-4">{request.contactNumber}</td>
                     <td className="px-6 py-4">
@@ -131,7 +164,6 @@ const Notifications: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       {request.strand}
-                      {/* Conditionally render tvlSubOption if the strand is 'TVL' */}
                       {request.strand === 'TVL' && request.tvlSubOption ? (
                         <span className="block text-gray-500 text-sm">
                           ({request.tvlSubOption})
@@ -162,6 +194,18 @@ const Notifications: React.FC = () => {
                         >
                           Mark as Done
                         </button>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {request.depedForm === 'Certificate of Enrollment' && (
+                        <div>
+                          <strong>Full Name:</strong> {request.firstName} {request.middleInitial}{' '}
+                          {request.lastName} {request.suffix && request.suffix !== 'N/A' && request.suffix}
+                          <br />
+                          <strong>Date:</strong> {getFormattedDate()}
+                          <br />
+                          <strong>School Year:</strong> {getCurrentSchoolYear()}
+                        </div>
                       )}
                     </td>
                   </tr>
