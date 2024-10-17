@@ -1,4 +1,4 @@
-export const userSchema = {
+export const addUser = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
@@ -17,7 +17,7 @@ export const userSchema = {
         },
         "role": {
             "type": "string",
-            "enum": ["Admin", "Faculty", "Teacher"]
+            "enum": ["Admin", "Faculty", "Adviser"]
         },
         "status": {
             "type": "string",

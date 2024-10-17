@@ -107,7 +107,7 @@ const AddUserPage: React.FC = () => {
             required
           >
             <option value="Admin">Admin</option>
-            <option value="Adviser">Teacher</option>
+            <option value="Adviser">Adviser</option>
             <option value="Faculty">Faculty</option>
           </select>
           <input

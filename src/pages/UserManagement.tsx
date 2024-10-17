@@ -32,7 +32,7 @@ const UserManagement: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   // User counts
-  const [userCounts, setUserCounts] = useState({ Admin: 0, Teacher: 0, Faculty: 0 });
+  const [userCounts, setUserCounts] = useState({ Admin: 0, Adviser: 0, Faculty: 0 });
 
   const fetchUsers = async () => {
     const usersCollection = collection(db, 'users');
@@ -46,7 +46,7 @@ const UserManagement: React.FC = () => {
     const counts = usersList.reduce((acc: any, user) => {
       acc[user.role] = (acc[user.role] || 0) + 1;
       return acc;
-    }, { Admin: 0, Teacher: 0, Faculty: 0 });
+    }, { Admin: 0, Adviser: 0, Faculty: 0 });
 
     setUserCounts(counts);
   };
@@ -147,8 +147,8 @@ const UserManagement: React.FC = () => {
         <div className="p-4 border rounded shadow bg-white flex items-center">
           <FaUserGraduate className="text-4xl text-green-500 mr-4" />
           <div>
-            <h3 className="font-bold text-lg">Teacher(s)</h3>
-            <p className="text-gray-600">{userCounts.Teacher}</p>
+            <h3 className="font-bold text-lg">Adviser(s)</h3>
+            <p className="text-gray-600">{userCounts.Adviser}</p>
           </div>
         </div>
         <div className="p-4 border rounded shadow bg-white flex items-center">
@@ -253,7 +253,7 @@ const UserManagement: React.FC = () => {
               required
             >
               <option value="Admin">Admin</option>
-              <option value="Teacher">Teacher</option>
+              <option value="Adviser">Adviser</option>
               <option value="Faculty">Faculty</option>
             </select>
             <select
