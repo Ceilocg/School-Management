@@ -1,15 +1,40 @@
-import { db } from './firebaseConfig.js'
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc } from 'firebase/firestore';
+import { db, auth, storage } from './firebaseConfig.js';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Firestore collection reference
 const usersCollection = collection(db, 'users');
 
-// Function to create a new user
+// Function to create a new user with Firebase Auth, Firestore, and optional image upload
 export const createUser = async (userData) => {
   try {
-    const docRef = await addDoc(usersCollection, userData);
-    console.log('User created with ID: ', docRef.id);
-    return docRef.id; // Return the ID of the created user
+    // Create user with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+    const userId = userCredential.user.uid; // Get the user ID from Firebase Auth
+
+    // Initialize imageUrl
+    let downloadURL = '';
+
+    // If an image is provided, upload it to Firebase Storage
+    if (userData.image) {
+      const storageRef = ref(storage, `users/${userId}/profile.jpg`);
+      await uploadBytes(storageRef, userData.image);
+      downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
+    }
+
+    // Add user details to Firestore using the userId from Firebase Auth as the document ID
+    await setDoc(doc(db, 'users', userId), {
+      fullname: userData.fullname,
+      username: userData.username,
+      email: userData.email,
+      role: userData.role,
+      imageUrl: downloadURL, // Store the image URL in Firestore if available
+      status: 'Active'
+    });
+
+    console.log('User created with ID: ', userId);
+    return userId; // Return the user ID
   } catch (error) {
     console.error('Error adding user: ', error);
     throw error;
@@ -32,7 +57,7 @@ export const updateUser = async (id, updatedData) => {
 export const patchUser = async (id, partialData) => {
   try {
     const userDoc = doc(db, 'users', id);
-    await updateDoc(userDoc, partialData); // Update only the fields provided in partialData
+    await updateDoc(userDoc, partialData);
     console.log('User partially updated with ID: ', id);
   } catch (error) {
     console.error('Error partially updating user: ', error);
