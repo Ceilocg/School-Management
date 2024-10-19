@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, updatePassword } from 'firebase/auth';
 import { storage } from '../firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FaUserShield, FaUserGraduate, FaUserTie } from 'react-icons/fa';
 
 interface User {
-  id: string; 
+  id: string;
   fullname: string;
   username: string;
   email: string;
@@ -27,6 +27,7 @@ const UserManagement: React.FC = () => {
   const [fullname, setFullname] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState(''); // State for password
   const [role, setRole] = useState('Admin');
   const [status, setStatus] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -37,7 +38,7 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     const usersCollection = collection(db, 'users');
     const usersSnapshot = await getDocs(usersCollection);
-    const usersList: User[] = usersSnapshot.docs.map(doc => ({
+    const usersList: User[] = usersSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     })) as User[];
@@ -78,6 +79,7 @@ const UserManagement: React.FC = () => {
     setFullname(user.fullname);
     setUsername(user.username);
     setEmail(user.email);
+    setPassword(''); // Clear the password field
     setRole(user.role);
     setStatus(user.status);
     setImageFile(null);
@@ -103,10 +105,21 @@ const UserManagement: React.FC = () => {
         status,
         imageUrl: newImageUrl,
       });
+
+      // If password is entered, update it
+      if (password) {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (user) {
+          await updatePassword(user, password);
+        }
+      }
+
       setEditingUser(null);
       setFullname('');
       setUsername('');
       setEmail('');
+      setPassword('');
       setRole('Admin');
       setStatus('Active');
       setImageFile(null);
@@ -119,13 +132,14 @@ const UserManagement: React.FC = () => {
     setFullname('');
     setUsername('');
     setEmail('');
+    setPassword(''); // Clear the password field on cancel
     setRole('Admin');
     setStatus('Active');
     setImageFile(null);
   };
 
   // Filtered users based on search query
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter((user) =>
     user.fullname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -134,7 +148,7 @@ const UserManagement: React.FC = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold">User Management</h2>
-  
+
       {/* Responsive Dashboard */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
         <div className="p-4 border rounded shadow bg-white flex items-center">
@@ -159,7 +173,7 @@ const UserManagement: React.FC = () => {
           </div>
         </div>
       </div>
-  
+
       {/* Flex container for Add User button and Search Bar */}
       <div className="flex justify-between items-center mt-4">
         {currentUserRole === 'Admin' ? (
@@ -169,7 +183,7 @@ const UserManagement: React.FC = () => {
         ) : (
           <p className="text-red-600">You do not have permission to add users.</p>
         )}
-  
+
         <input
           type="text"
           placeholder="Search by name, username, or email"
@@ -178,7 +192,7 @@ const UserManagement: React.FC = () => {
           className="p-2 border border-gray-300 rounded w-3/4 ml-4"
         />
       </div>
-  
+
       {/* Users Table */}
       <table className="min-w-full border border-gray-300 mt-4">
         <thead>
@@ -193,7 +207,7 @@ const UserManagement: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map(user => (
+          {filteredUsers.map((user) => (
             <tr key={user.id}>
               <td className="border border-gray-300 p-2">{user.fullname}</td>
               <td className="border border-gray-300 p-2">{user.username}</td>
@@ -205,9 +219,10 @@ const UserManagement: React.FC = () => {
               </td>
               {currentUserRole === 'Admin' && (
                 <td className="border border-gray-300 p-2">
-                  <button 
-                    className="text-blue-600 hover:underline" 
-                    onClick={() => handleEditUser(user)}>
+                  <button
+                    className="text-blue-600 hover:underline"
+                    onClick={() => handleEditUser(user)}
+                  >
                     Edit
                   </button>
                 </td>
@@ -216,7 +231,7 @@ const UserManagement: React.FC = () => {
           ))}
         </tbody>
       </table>
-  
+
       {/* Edit User Form */}
       {editingUser && (
         <form onSubmit={handleSaveEdit} className="mt-4 p-4 border border-gray-300">
@@ -246,6 +261,13 @@ const UserManagement: React.FC = () => {
               className="p-2 border border-gray-300"
               required
             />
+            <input
+              type="password"
+              placeholder="Password (leave blank to keep current)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-2 border border-gray-300"
+            />
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -273,17 +295,10 @@ const UserManagement: React.FC = () => {
             />
           </div>
           <div className="mt-4 flex justify-between">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white p-2 rounded"
-            >
+            <button type="submit" className="bg-blue-500 text-white p-2 rounded">
               Save
             </button>
-            <button
-              type="button"
-              onClick={handleCancelEdit}
-              className="bg-gray-500 text-white p-2 rounded"
-            >
+            <button type="button" onClick={handleCancelEdit} className="bg-gray-500 text-white p-2 rounded">
               Cancel
             </button>
           </div>
@@ -291,7 +306,6 @@ const UserManagement: React.FC = () => {
       )}
     </div>
   );
-  
 };
 
 export default UserManagement;

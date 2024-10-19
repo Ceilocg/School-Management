@@ -1,7 +1,8 @@
-export const addUser = {
+export const patch = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+        "id": { "type": "string" }, // Assuming 'id' can be part of the payload
         "email": {
             "type": "string",
             "format": "email",
@@ -10,10 +11,6 @@ export const addUser = {
         "fullname": {
             "type": "string",
             "minLength": 1
-        },
-        "password": {
-            "type": "string",
-            "minLength": 6
         },
         "role": {
             "type": "string",
@@ -26,8 +23,17 @@ export const addUser = {
         "username": {
             "type": "string",
             "minLength": 3
+        },
+        "imageUrl": { 
+            "type": "string" 
+        },
+        "password": {
+            "type": "string",
+            "minLength": 8,
+            "errorMessage": {
+                "minLength": "Password should be at least 8 characters long"
+            }
         }
     },
-    "required": ["email", "fullname", "password", "role", "status", "username"],
     "additionalProperties": false
 };

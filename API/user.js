@@ -1,5 +1,5 @@
 import { db, auth, storage } from './firebaseConfig.js';
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc } from 'firebase/firestore';
+import { collection, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -9,37 +9,42 @@ const usersCollection = collection(db, 'users');
 // Function to create a new user with Firebase Auth, Firestore, and optional image upload
 export const createUser = async (userData) => {
   try {
-    // Create user with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-    const userId = userCredential.user.uid; // Get the user ID from Firebase Auth
+    const userId = userCredential.user.uid;
 
-    // Initialize imageUrl
     let downloadURL = '';
-
-    // If an image is provided, upload it to Firebase Storage
-    if (userData.image) {
-      const storageRef = ref(storage, `users/${userId}/profile.jpg`);
-      await uploadBytes(storageRef, userData.image);
-      downloadURL = await getDownloadURL(storageRef); // Get the download URL of the uploaded image
-    }
+    const createdAt = new Date().toISOString();
 
     // Add user details to Firestore using the userId from Firebase Auth as the document ID
-    await setDoc(doc(db, 'users', userId), {
+    const userDocData = {
       fullname: userData.fullname,
       username: userData.username,
       email: userData.email,
       role: userData.role,
-      imageUrl: downloadURL, // Store the image URL in Firestore if available
-      status: 'Active'
-    });
+      imageUrl: downloadURL || '',
+      status: 'Active',
+      createdAt: createdAt
+    };
 
-    console.log('User created with ID: ', userId);
-    return userId; // Return the user ID
+    await setDoc(doc(db, 'users', userId), userDocData);
+
+    // Fetch the complete user data from Firestore
+    const userDocSnap = await getDoc(doc(db, 'users', userId));
+
+    if (!userDocSnap.exists()) {
+      throw new Error('Error retrieving the newly created user');
+    }
+
+    // Return the full user object
+    const userRecord = { id: userId, ...userDocSnap.data() };
+    return userRecord;
+
   } catch (error) {
     console.error('Error adding user: ', error);
     throw error;
   }
 };
+
 
 // Function to update a user by ID
 export const updateUser = async (id, updatedData) => {
@@ -81,7 +86,10 @@ export const deleteUser = async (id) => {
 export const fetchUsers = async () => {
   try {
     const snapshot = await getDocs(usersCollection);
-    const userRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const userRecords = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
     return userRecords;
   } catch (error) {
     console.error('Error fetching users: ', error);

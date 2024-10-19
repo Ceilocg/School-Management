@@ -36,7 +36,6 @@ export const Users  = {
         "additionalProperties": false
     }
 };
-
 pm.test("Response schema is valid", function() {
     pm.response.to.have.jsonSchema(schema);
 });

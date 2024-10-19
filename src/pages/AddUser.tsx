@@ -43,6 +43,7 @@ const AddUserPage: React.FC = () => {
         fullname,
         username,
         email,
+        password,
         role,
         imageUrl: downloadURL, // Store the image URL in Firestore
         status: "Active"
