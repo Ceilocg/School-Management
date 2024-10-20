@@ -1,49 +1,37 @@
-import { db, auth, storage } from './firebaseConfig.js';
+import { db, auth } from './firebaseConfig.js';
 import { collection, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+
 
 // Firestore collection reference
 const usersCollection = collection(db, 'users');
 
-// Function to create a new user with Firebase Auth, Firestore, and optional image upload
+// Function to create a new user
 export const createUser = async (userData) => {
   try {
+    // First, create user using email and password authentication
     const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-    const userId = userCredential.user.uid;
+    const userId = userCredential.user.uid;  // Retrieve the user ID from Firebase Auth
 
-    let downloadURL = '';
-    const createdAt = new Date().toISOString();
-
-    // Add user details to Firestore using the userId from Firebase Auth as the document ID
-    const userDocData = {
+    // Add user details to Firestore with the userId as the document ID
+    const userRef = await setDoc(doc(usersCollection, userId), {
       fullname: userData.fullname,
       username: userData.username,
       email: userData.email,
       role: userData.role,
-      imageUrl: downloadURL || '',
-      status: 'Active',
-      createdAt: createdAt
-    };
+      imageUrl: userData.imageUrl || '',
+      status: userData.status,
+    });
 
-    await setDoc(doc(db, 'users', userId), userDocData);
-
-    // Fetch the complete user data from Firestore
-    const userDocSnap = await getDoc(doc(db, 'users', userId));
-
-    if (!userDocSnap.exists()) {
-      throw new Error('Error retrieving the newly created user');
-    }
-
-    // Return the full user object
-    const userRecord = { id: userId, ...userDocSnap.data() };
-    return userRecord;
-
+    console.log('User created with ID: ', docRef.id); 
+    return docRef.id;  // Return the user ID
   } catch (error) {
-    console.error('Error adding user: ', error);
+    console.error('Error creating user: ', error);
     throw error;
   }
 };
+
+
 
 
 // Function to update a user by ID

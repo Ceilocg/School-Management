@@ -19,6 +19,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@types/pizzip": "^3.0.5",
     "admin-lte": "^4.0.0-beta2",
+    "ajv-formats": "^3.0.1",
     "canvas": "^2.11.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
