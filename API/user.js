@@ -2,7 +2,6 @@ import { db, auth } from './firebaseConfig.js';
 import { collection, updateDoc, deleteDoc, doc, getDocs, getDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
-
 // Firestore collection reference
 const usersCollection = collection(db, 'users');
 
@@ -14,7 +13,7 @@ export const createUser = async (userData) => {
     const userId = userCredential.user.uid;  // Retrieve the user ID from Firebase Auth
 
     // Add user details to Firestore with the userId as the document ID
-    const userRef = await setDoc(doc(usersCollection, userId), {
+    await setDoc(doc(usersCollection, userId), {
       fullname: userData.fullname,
       username: userData.username,
       email: userData.email,
@@ -23,16 +22,18 @@ export const createUser = async (userData) => {
       status: userData.status,
     });
 
-    console.log('User created with ID: ', docRef.id); 
-    return docRef.id;  // Return the user ID
+    console.log('User created with ID: ', userId);
+    return userId;  // Return the user ID
   } catch (error) {
-    console.error('Error creating user: ', error);
-    throw error;
+    if (error.code === 'auth/email-already-in-use') {
+      console.error('Error: Email already in use.');
+      throw new Error('Email already in use. Please use a different email.');
+    } else {
+      console.error('Error creating user: ', error);
+      throw error;  // Re-throw any other errors
+    }
   }
 };
-
-
-
 
 // Function to update a user by ID
 export const updateUser = async (id, updatedData) => {

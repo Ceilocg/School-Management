@@ -3,6 +3,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';  // Import ajv-formats
 import { createUser, patchUser, deleteUser, fetchUsers, getUserById } from './user.js';
 
+
 const app = express();
 const PORT = 3000;
 
@@ -17,7 +18,7 @@ const userSchema = {
     fullname: { type: 'string' },
     username: { type: 'string' },
     email: { type: 'string', format: 'email' },  // Validate email format
-    password: { type: 'string' },
+    password: { type: 'string', minLength: 6  },
     role: { 
       type: 'string',
       enum: ['Admin', 'Faculty', 'Adviser'],  // Allowed roles only
